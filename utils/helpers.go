@@ -1,4 +1,4 @@
-package utility
+package utils
 
 func DoneMessage(done bool) string {
 	message := map[bool]string{
