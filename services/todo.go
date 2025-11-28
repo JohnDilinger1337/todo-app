@@ -6,31 +6,53 @@ import (
 	"strconv"
 )
 
-func AddNewItem(input models.TodoInput, todo *[]models.Todo) error {
+type TodoService interface {
+	Add(input models.TodoInput) error
+	Delete(input int) error
+	GetAll() []models.Todo
+}
+
+type todoService struct {
+	todos  []models.Todo
+	nextID int
+}
+
+func NewTodoService() TodoService {
+	return &todoService{
+		todos:  []models.Todo{},
+		nextID: 1,
+	}
+}
+
+func (s *todoService) GetAll() []models.Todo {
+	return s.todos
+}
+
+func (s *todoService) Add(input models.TodoInput) error {
 	if input.Title == "" {
 		return fmt.Errorf("invalid title: %s", input.Title)
 	} else if !input.Category.IsValid() {
 		return fmt.Errorf("invalid category: %s", input.Category)
 	}
 
-	item := models.Todo{
-		ID:       len(*todo) + 1,
+	todo := models.Todo{
+		ID:       s.nextID,
 		Title:    input.Title,
 		Category: input.Category,
 		Done:     false,
 	}
-
-	*todo = append(*todo, item)
+	s.todos = append(s.todos, todo)
+	s.nextID++
 
 	return nil
 }
 
-func DeleteNewItem(input int, todo *[]models.Todo) error {
-	if *todo == nil || input <= 0 || input > len(*todo) {
+func (s *todoService) Delete(input int) error {
+	if s.todos == nil || input <= 0 || input > len(s.todos) {
 		return fmt.Errorf("something went wrong while deleteing this item with ID: (%s)", strconv.Itoa(input))
 	}
 
-	*todo = append((*todo)[:input-1], (*todo)[input:]...)
+	s.todos = append((s.todos)[:input-1], (s.todos)[input:]...)
 
 	return nil
 }
